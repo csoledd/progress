@@ -5,7 +5,7 @@ const TaskTracker = () => {
     // Funcionalidades de autenticación
     login: true,
     userAdmin: true,
-    passwordManagement: true,
+    passwordManagement: false,
     
     // Base de datos
     sqlConnection: true,
@@ -49,9 +49,9 @@ const TaskTracker = () => {
   // Stats corregidos (para ajustar el conteo)
   const stats = {
     completedTasks: 17,
-    totalTasks: 24, // Total de 17 + 9 = 26
-    pendingTasks: 7,
-    completionPercentage: Math.round((17 / 24) * 100)
+    totalTasks: 25, // Total de 17 + 9 = 26
+    pendingTasks: 8,
+    completionPercentage: Math.round((17 / 25) * 100)
   };
   
   // Avances recientes
@@ -59,7 +59,7 @@ const TaskTracker = () => {
     { date: "14-may-2025", update: "Aplicando mejoras en el Fronted (en proceso)" },
     { date: "14-may-2025", update: "En proceso la corrección de errores en la página (revisando a detalle la causa) " },
     { date: "14-may-2025", update: "Corrección del problema con el menú desplegable de Administrador" },
-    { date: "14-may-2025", update: "Mejora en la exportación de reportes a Excel" },
+    { date: "13-may-2025", update: "Mejora en la exportación de reportes a Excel" },
     { date: "13-may-2025", update: "Implementación de validación de datos" },
     { date: "13-may-2025", update: "Ajustes en el funcionamiento del sistema" },
     { date: "12-may-2025", update: "Finalización de la vista de historial (con base de datos)" },
