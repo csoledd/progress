@@ -49,14 +49,15 @@ const TaskTracker = () => {
   // Stats corregidos (para ajustar el conteo)
   const stats = {
     completedTasks: 17,
-    totalTasks: 26, // Total de 17 + 9 = 26
-    pendingTasks: 9,
-    completionPercentage: Math.round((17 / 26) * 100)
+    totalTasks: 24, // Total de 17 + 9 = 26
+    pendingTasks: 7,
+    completionPercentage: Math.round((17 / 24) * 100)
   };
   
   // Avances recientes
   const recentUpdates = [
-    { date: "14-may-2025", update: "Corrección de ciertos errores" },
+    { date: "14-may-2025", update: "Aplicando mejoras en el Fronted (en proceso)" },
+    { date: "14-may-2025", update: "En proceso la corrección de errores en la página (revisando a detalle la causa) " },
     { date: "14-may-2025", update: "Corrección del problema con el menú desplegable de Administrador" },
     { date: "14-may-2025", update: "Mejora en la exportación de reportes a Excel" },
     { date: "13-may-2025", update: "Implementación de validación de datos" },
@@ -66,11 +67,11 @@ const TaskTracker = () => {
 
   // Categorías para agrupar tareas
   const categories = [
-    { title: "Autenticación y Usuarios", items: ['login', 'userAdmin', 'passwordManagement', 'userRoles'] },
+    { title: "Autenticación y Usuarios", items: ['login', 'userAdmin', 'passwordManagement'] },
     { title: "Base de Datos", items: ['sqlConnection', 'crudOperations', 'dataBackup', 'dataIntegrity'] },
     { title: "Interfaz de Usuario", items: ['interfaceDesign', 'responsiveDesign', 'adminDropdown', 'fishAnimations', 'frontendImprovements'] },
     { title: "Gestión de Equipos", items: ['equipmentListing', 'addEquipment', 'editEquipment', 'deleteEquipment', 'searchEquipment', 'filteringOptions'] },
-    { title: "Reportes", items: ['excelExport', 'completeReport', 'historyView', 'advancedReports'] },
+    { title: "Reportes", items: ['excelExport', 'completeReport', 'historyView'] },
     { title: "Optimización y Seguridad", items: ['performanceOptimization', 'securityEnhancements', 'errorHandling'] }
   ];
 
@@ -79,7 +80,6 @@ const TaskTracker = () => {
     login: "Acceso a cuenta (Login)",
     userAdmin: "Administración de usuarios",
     passwordManagement: "Cambio de contraseña",
-    userRoles: "Roles de usuario",
     sqlConnection: "Conexión a SQL Server",
     crudOperations: "Operaciones CRUD",
     dataBackup: "Respaldo de datos",
@@ -96,9 +96,8 @@ const TaskTracker = () => {
     searchEquipment: "Búsqueda de equipos",
     filteringOptions: "Filtrado avanzado",
     excelExport: "Exportar a Excel",
-    completeReport: "Reporte completo",
+    completeReport: "Excel completo con todo tipo de dato.",
     historyView: "Vista de historial",
-    advancedReports: "Reportes avanzados",
     performanceOptimization: "Optimización de rendimiento",
     securityEnhancements: "Mejoras de seguridad",
     errorHandling: "Manejo avanzado de errores"
