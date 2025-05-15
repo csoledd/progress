@@ -65,10 +65,6 @@ const ProjectTracker = () => {
     { date: "14-may-2025", update: "Aplicando mejoras en el Fronted (en proceso)" },
     { date: "14-may-2025", update: "En proceso la corrección de errores en la página (revisando a detalle la causa) " },
     { date: "14-may-2025", update: "Corrección del problema con el menú desplegable de Administrador" },
-    { date: "13-may-2025", update: "Mejora en la exportación de reportes a Excel" },
-    { date: "13-may-2025", update: "Implementación de validación de datos" },
-    { date: "13-may-2025", update: "Ajustes en el funcionamiento del sistema" },
-    { date: "12-may-2025", update: "Finalización de la vista de historial (con base de datos)" },
   ];
 
   // Categorías para agrupar tareas
