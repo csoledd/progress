@@ -51,14 +51,14 @@ const ProjectTracker = () => {
   // Stats corregidos (para ajustar el conteo)
    const stats = {
     completedTasks: 17,
-    totalTasks: 28, // Total de 17 + 9 = 26
+    totalTasks: 22, // Total de 17 + 9 = 26
     pendingTasks: 5,
-    completionPercentage: Math.round((17 / 28) * 100)
+    completionPercentage: Math.round((17 / 22) * 100)
   };
 
   // Avances recientes
   const recentUpdates = [
-    { date: "15-may-2025", update: "Aplicando mejoras de seguridad y manejo avanzado de errores" },
+    { date: "15-may-2025", update: "Aplicando mejoras de seguridad" },
     { date: "15-may-2025", update: "Aplicando seguridad al momento de cambiar contraseña, ingresando a l aplataforma" },
     { date: "15-may-2025", update: "Mejora del diseño en el Home" },
     { date: "15-may-2025", update: "Corección del cambio de contraseña segura (funciona correctamente)" },
