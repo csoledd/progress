@@ -6,7 +6,7 @@ const ProjectTracker = () => {
     // Funcionalidades de autenticación
     login: true,
     userAdmin: true,
-    passwordManagement: false,
+    passwordManagement: true,
     
     // Base de datos
     sqlConnection: true,
@@ -38,25 +38,29 @@ const ProjectTracker = () => {
     
     // Optimizaciones
     performanceOptimization: false,
-    securityEnhancements: false,
-    advancedReports: false,
+    securityEnhancements: true,
+    advancedReports: true,
     
     // Validaciones
     inputValidation: true,
     errorHandling: false,
     dataIntegrity: false,
+
   });
 
   // Stats corregidos (para ajustar el conteo)
    const stats = {
     completedTasks: 17,
-    totalTasks: 25, // Total de 17 + 9 = 26
-    pendingTasks: 8,
-    completionPercentage: Math.round((17 / 25) * 100)
+    totalTasks: 26, // Total de 17 + 9 = 26
+    pendingTasks: 7,
+    completionPercentage: Math.round((17 / 26) * 100)
   };
 
   // Avances recientes
   const recentUpdates = [
+    { date: "14-may-2025", update: "Aplicando seguridad al momento de cambiar contraseña, ingresando a l aplataforma" },
+    { date: "15-may-2025", update: "Mejora del diseño en el Home" },
+    { date: "15-may-2025", update: "Corección del cambio de contraseña segura (funciona correctamente)" },
     { date: "14-may-2025", update: "Aplicando mejoras en el Fronted (en proceso)" },
     { date: "14-may-2025", update: "En proceso la corrección de errores en la página (revisando a detalle la causa) " },
     { date: "14-may-2025", update: "Corrección del problema con el menú desplegable de Administrador" },
