@@ -58,7 +58,8 @@ const ProjectTracker = () => {
 
   // Avances recientes
   const recentUpdates = [
-    { date: "14-may-2025", update: "Aplicando seguridad al momento de cambiar contraseña, ingresando a l aplataforma" },
+    { date: "15-may-2025", update: "Aplicando mejoras de seguridad y manejo avanzado de errores" },
+    { date: "15-may-2025", update: "Aplicando seguridad al momento de cambiar contraseña, ingresando a l aplataforma" },
     { date: "15-may-2025", update: "Mejora del diseño en el Home" },
     { date: "15-may-2025", update: "Corección del cambio de contraseña segura (funciona correctamente)" },
     { date: "14-may-2025", update: "Aplicando mejoras en el Fronted (en proceso)" },
