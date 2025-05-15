@@ -51,9 +51,9 @@ const ProjectTracker = () => {
   // Stats corregidos (para ajustar el conteo)
    const stats = {
     completedTasks: 17,
-    totalTasks: 26, // Total de 17 + 9 = 26
-    pendingTasks: 7,
-    completionPercentage: Math.round((17 / 26) * 100)
+    totalTasks: 28, // Total de 17 + 9 = 26
+    pendingTasks: 5,
+    completionPercentage: Math.round((17 / 28) * 100)
   };
 
   // Avances recientes
