@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_ENDPOINTS } from '../config';
 
 const ProjectTracker = () => {
   // ---------- SECTION: TASK TRACKER STATE ----------
@@ -126,33 +127,50 @@ const ProjectTracker = () => {
   ];
 
   // ---------- SECTION: EVIDENCE TRACKER STATE ----------
-  const [evidences, setEvidences] = useState([
-    // Ejemplos de evidencias pre-cargadas
-    { 
-      id: 1, 
-      title: 'Pantalla de login implementada', 
-      date: '10-may-2025', 
-      image: null, // Será reemplazada por la URL de la imagen cuando se implemente el backend
-      description: 'Implementación de la pantalla de acceso con validación de usuarios',
-      category: 'Autenticación'
-    },
-    { 
-      id: 2, 
-      title: 'Listado de equipos', 
-      date: '12-may-2025', 
-      image: null,
-      description: 'Vista principal con todos los equipos registrados y opciones de búsqueda',
-      category: 'Equipos'
+  const [evidences, setEvidences] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Cargar evidencias al iniciar
+  useEffect(() => {
+    fetchEvidences();
+  }, []);
+
+  // Función para cargar las evidencias desde el backend
+  const fetchEvidences = async () => {
+    try {
+      const response = await fetch(API_ENDPOINTS.FILES);
+      if (!response.ok) throw new Error('Error al cargar las evidencias');
+      const files = await response.json();
+      
+      // Transformar los archivos en el formato de evidencias
+      const evidencesList = files.map((file, index) => ({
+        id: index + 1,
+        title: file.name.split('.')[0],
+        description: `Archivo ${file.type}`,
+        category: 'Interfaz',
+        date: new Date().toLocaleDateString(),
+        file: `http://localhost:3001${file.url}`,
+        fileType: file.type.startsWith('image/') ? 'image' : 'video',
+        fileName: file.name
+      }));
+      
+      setEvidences(evidencesList);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
     }
-  ]);
+  };
 
   // Estado para manejar el formulario de nueva evidencia
   const [newEvidence, setNewEvidence] = useState({
     title: '',
     description: '',
     category: 'Interfaz',
-    image: null,
-    imagePreview: null
+    file: null,
+    filePreview: null,
+    fileType: null // 'image' o 'video'
   });
 
   // Estado para mostrar/ocultar el formulario
@@ -177,22 +195,32 @@ const ProjectTracker = () => {
     "Otro"
   ];
 
+  // Estado para manejar errores en la carga de archivos
+  const [fileError, setFileError] = useState('');
+
   // ---------- SECTION: EVIDENCE TRACKER FUNCTIONS ----------
-  // Función para manejar la carga de imagen
-  const handleImageChange = (e) => {
+  // Función para manejar la carga de archivos
+  const handleFileChange = (e) => {
+    setFileError('');
     if (e.target.files && e.target.files[0]) {
-      const selectedImage = e.target.files[0];
+      const selectedFile = e.target.files[0];
+      if (selectedFile.size > 50 * 1024 * 1024) { // 50 MB
+        setFileError('El archivo es demasiado grande. El máximo permitido es 50 MB.');
+        return;
+      }
+      const fileType = selectedFile.type.startsWith('image/') ? 'image' : 'video';
       const reader = new FileReader();
       
       reader.onloadend = () => {
         setNewEvidence({
           ...newEvidence,
-          image: selectedImage,
-          imagePreview: reader.result
+          file: selectedFile,
+          filePreview: reader.result,
+          fileType: fileType
         });
       };
       
-      reader.readAsDataURL(selectedImage);
+      reader.readAsDataURL(selectedFile);
     }
   };
 
@@ -203,36 +231,56 @@ const ProjectTracker = () => {
   };
 
   // Función para agregar una nueva evidencia
-  const handleAddEvidence = (e) => {
+  const handleAddEvidence = async (e) => {
     e.preventDefault();
     
-    // Crear objeto de nueva evidencia
-    const currentDate = new Date();
-    const formattedDate = `${currentDate.getDate()}-${getMonthName(currentDate.getMonth())}-${currentDate.getFullYear()}`;
-    
-    const newEvidenceItem = {
-      id: evidences.length + 1,
-      title: newEvidence.title,
-      description: newEvidence.description,
-      category: newEvidence.category,
-      date: formattedDate,
-      image: newEvidence.imagePreview, // En una implementación real, aquí subirías la imagen a un servidor
-    };
-    
-    // Actualizar el estado
-    setEvidences([newEvidenceItem, ...evidences]);
-    
-    // Reiniciar el formulario
-    setNewEvidence({
-      title: '',
-      description: '',
-      category: 'Interfaz',
-      image: null,
-      imagePreview: null
-    });
-    
-    // Ocultar el formulario
-    setShowEvidenceForm(false);
+    try {
+      const formData = new FormData();
+      formData.append('file', newEvidence.file);
+      
+      const response = await fetch(API_ENDPOINTS.UPLOAD, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) throw new Error('Error al subir el archivo');
+      
+      const result = await response.json();
+      
+      // Crear objeto de nueva evidencia
+      const currentDate = new Date();
+      const formattedDate = `${currentDate.getDate()}-${getMonthName(currentDate.getMonth())}-${currentDate.getFullYear()}`;
+      
+      const newEvidenceItem = {
+        id: evidences.length + 1,
+        title: newEvidence.title,
+        description: newEvidence.description,
+        category: newEvidence.category,
+        date: formattedDate,
+        file: `http://localhost:3001${result.fileUrl}`,
+        fileType: newEvidence.fileType,
+        fileName: result.fileName
+      };
+      
+      // Actualizar el estado
+      setEvidences([newEvidenceItem, ...evidences]);
+      
+      // Reiniciar el formulario
+      setNewEvidence({
+        title: '',
+        description: '',
+        category: 'Interfaz',
+        file: null,
+        filePreview: null,
+        fileType: null
+      });
+      
+      // Ocultar el formulario
+      setShowEvidenceForm(false);
+      
+    } catch (err) {
+      setFileError('Error al subir el archivo: ' + err.message);
+    }
   };
 
   // Función auxiliar para obtener el nombre del mes
@@ -245,8 +293,27 @@ const ProjectTracker = () => {
   };
 
   // Función para eliminar una evidencia
-  const handleDeleteEvidence = (id) => {
-    setEvidences(evidences.filter(evidence => evidence.id !== id));
+  const handleDeleteEvidence = async (id) => {
+    try {
+      const evidence = evidences.find(e => e.id === id);
+      if (!evidence) return;
+
+      const response = await fetch(API_ENDPOINTS.DELETE_FILE(evidence.fileName), {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) throw new Error('Error al eliminar el archivo');
+
+      // Actualizar el estado local
+      setEvidences(evidences.filter(e => e.id !== id));
+      
+      // Si hay una evidencia seleccionada y es la que se está eliminando, cerrar el modal
+      if (selectedEvidence && selectedEvidence.id === id) {
+        handleCloseEvidenceDetail();
+      }
+    } catch (err) {
+      setError('Error al eliminar el archivo: ' + err.message);
+    }
   };
 
   // Función para mostrar el detalle de una evidencia
@@ -468,6 +535,21 @@ const ProjectTracker = () => {
             ))}
           </div>
 
+          {/* Mostrar mensaje de error si existe */}
+          {error && (
+            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+              {error}
+            </div>
+          )}
+
+          {/* Mostrar indicador de carga */}
+          {loading && (
+            <div className="text-center py-10">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
+              <p className="mt-2 text-gray-600">Cargando evidencias...</p>
+            </div>
+          )}
+
           {/* Formulario para agregar nueva evidencia */}
           {showEvidenceForm && (
             <div className="bg-blue-50 p-4 rounded-lg mb-6 animate-fadeIn border border-blue-100">
@@ -516,24 +598,24 @@ const ProjectTracker = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Imagen de Evidencia</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Archivo de Evidencia</label>
                   <div className="mt-1 flex items-center">
                     <label className="flex flex-col items-center px-4 py-2 bg-white text-blue-700 rounded-lg shadow-lg tracking-wide border border-blue-500 cursor-pointer hover:bg-blue-500 hover:text-white transition-colors">
                       <svg className="w-6 h-6" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
                       </svg>
-                      <span className="mt-2 text-sm leading-normal">Seleccionar imagen</span>
-                      <input type='file' className="hidden" accept="image/*" onChange={handleImageChange} required />
+                      <span className="mt-2 text-sm leading-normal">Seleccionar archivo</span>
+                      <input 
+                        type='file' 
+                        className="hidden" 
+                        accept="image/*,video/*" 
+                        onChange={handleFileChange} 
+                        required 
+                      />
                     </label>
-                    {newEvidence.imagePreview && (
-                      <div className="ml-4">
-                        <span className="text-xs text-green-600 font-medium">¡Imagen seleccionada!</span>
-                        <img 
-                          src={newEvidence.imagePreview} 
-                          alt="Vista previa" 
-                          className="mt-2 h-16 w-auto object-cover rounded-md border border-gray-300"
-                        />
-                      </div>
+                    
+                    {fileError && (
+                      <div className="text-red-600 text-sm mb-2">{fileError}</div>
                     )}
                   </div>
                 </div>
@@ -574,12 +656,20 @@ const ProjectTracker = () => {
                     className="h-48 bg-gray-100 overflow-hidden relative cursor-pointer"
                     onClick={() => handleViewEvidence(evidence)}
                   >
-                    {evidence.image ? (
-                      <img 
-                        src={evidence.image} 
-                        alt={evidence.title} 
-                        className="w-full h-full object-cover"
-                      />
+                    {evidence.file ? (
+                      evidence.fileType === 'image' ? (
+                        <img 
+                          src={evidence.file} 
+                          alt={evidence.title} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <video 
+                          src={evidence.file} 
+                          className="w-full h-full object-cover"
+                          controls
+                        />
+                      )
                     ) : (
                       <div className="h-full flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -690,12 +780,20 @@ const ProjectTracker = () => {
             <div className="p-6">
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="md:w-1/2">
-                  {selectedEvidence.image ? (
-                    <img 
-                      src={selectedEvidence.image} 
-                      alt={selectedEvidence.title} 
-                      className="w-full h-auto rounded-lg shadow-md"
-                    />
+                  {selectedEvidence.file ? (
+                    selectedEvidence.fileType === 'image' ? (
+                      <img 
+                        src={selectedEvidence.file} 
+                        alt={selectedEvidence.title} 
+                        className="w-full h-auto rounded-lg shadow-md"
+                      />
+                    ) : (
+                      <video 
+                        src={selectedEvidence.file} 
+                        className="w-full h-auto rounded-lg shadow-md"
+                        controls
+                      />
+                    )
                   ) : (
                     <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -719,12 +817,6 @@ const ProjectTracker = () => {
                   <div className="border-t pt-4 mt-6">
                     <h4 className="text-lg font-semibold text-gray-800 mb-2">Acciones</h4>
                     <div className="flex space-x-3">
-                      <button className="flex items-center text-blue-600 hover:text-blue-800">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                        </svg>
-                        Editar
-                      </button>
                       <button 
                         onClick={() => {
                           handleDeleteEvidence(selectedEvidence.id);
@@ -737,14 +829,22 @@ const ProjectTracker = () => {
                         </svg>
                         Eliminar
                       </button>
-                      {selectedEvidence.image && (
-                        <button className="flex items-center text-green-600 hover:text-green-800">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
-                          Descargar
-                        </button>
-                      )}
+                      <button 
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = selectedEvidence.file;
+                          link.download = `${selectedEvidence.title}.${selectedEvidence.fileType === 'image' ? 'jpg' : 'mp4'}`;
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }}
+                        className="flex items-center text-green-600 hover:text-green-800"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                        Descargar
+                      </button>
                     </div>
                   </div>
                 </div>
