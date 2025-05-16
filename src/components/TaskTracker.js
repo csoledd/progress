@@ -37,9 +37,8 @@ const ProjectTracker = () => {
     dataBackup: false,
     
     // Optimizaciones
-    performanceOptimization: false,
+    performanceOptimization: true,
     securityEnhancements: true,
-    advancedReports: true,
     
     // Validaciones
     inputValidation: true,
@@ -51,20 +50,19 @@ const ProjectTracker = () => {
   // Stats corregidos (para ajustar el conteo)
    const stats = {
     completedTasks: 17,
-    totalTasks: 22, // Total de 17 + 9 = 26
-    pendingTasks: 5,
-    completionPercentage: Math.round((17 / 22) * 100)
+    totalTasks: 21, // Total de 17 + 9 = 26
+    pendingTasks: 4,
+    completionPercentage: Math.round((17 / 21) * 100)
   };
 
+
+  
   // Avances recientes
   const recentUpdates = [
-    { date: "15-may-2025", update: "Aplicando mejoras de seguridad" },
-    { date: "15-may-2025", update: "Aplicando seguridad al momento de cambiar contraseña, ingresando a l aplataforma" },
-    { date: "15-may-2025", update: "Mejora del diseño en el Home" },
-    { date: "15-may-2025", update: "Corección del cambio de contraseña segura (funciona correctamente)" },
-    { date: "14-may-2025", update: "Aplicando mejoras en el Fronted (en proceso)" },
-    { date: "14-may-2025", update: "En proceso la corrección de errores en la página (revisando a detalle la causa) " },
-    { date: "14-may-2025", update: "Corrección del problema con el menú desplegable de Administrador" },
+    { date: "16-may-2025", update: "Se ajustó el flujo de autenticación (cambio de JWT a cookies) para garantizar un login, cambio de contraseña y logout automáticos y seguros." },
+    { date: "16-may-2025", update: "Se creó un servicio de hashing seguro (PasswordService)" },
+    { date: "16-may-2025", update: "Se reforzaron los headers de seguridad (CSP, X-Frame-Options, etc.)." },
+    { date: "16-may-2025", update: "Se optimizó el rendimiento (compresión y cacheo)" },
   ];
 
   // Categorías para agrupar tareas
