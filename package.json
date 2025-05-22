@@ -2,11 +2,12 @@
   "name": "progress-tracker",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://csoledd.github.io/progresoproyecto",
+  "homepage": "https://csoledd.github.io/progress",
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-scripts": "5.0.0"
+    "react-scripts": "5.0.0",
+    "recharts": "^2.15.3"
   },
   "scripts": {
     "start": "react-scripts start",

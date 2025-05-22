@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_ENDPOINTS } from '../config';
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const ProjectTracker = () => {
   // ---------- SECTION: TASK TRACKER STATE ----------
@@ -18,7 +18,7 @@ const ProjectTracker = () => {
     responsiveDesign: true,
     adminDropdown: true,
     fishAnimations: true,
-    frontendImprovements: false, // Esta tarea está pendiente
+    frontendImprovements: false,
     
     // Funcionalidades de equipos
     equipmentListing: true,
@@ -33,7 +33,6 @@ const ProjectTracker = () => {
     
     // Funcionalidades adicionales
     historyView: true,
-    filteringOptions: false,
     userRoles: false,
     dataBackup: false,
     
@@ -45,25 +44,49 @@ const ProjectTracker = () => {
     inputValidation: true,
     errorHandling: false,
     dataIntegrity: false,
-
   });
 
-  // Stats corregidos (para ajustar el conteo)
-   const stats = {
-    completedTasks: 17,
-    totalTasks: 21, // Total de 17 + 9 = 26
+  // Stats corregidos
+  const stats = {
+    completedTasks: 19,
+    totalTasks: 23,
     pendingTasks: 4,
-    completionPercentage: Math.round((17 / 21) * 100)
+    completionPercentage: Math.round((19 / 23) * 100)
   };
 
+  // Datos para el gráfico de progreso
+  const progressData = [
+    { mes: 'Enero', completadas: 5, pendientes: 18 },
+    { mes: 'Febrero', completadas: 8, pendientes: 15 },
+    { mes: 'Marzo', completadas: 12, pendientes: 11 },
+    { mes: 'Abril', completadas: 15, pendientes: 8 },
+    { mes: 'Mayo', completadas: 17, pendientes: 6 }
+  ];
 
-  
+  // Datos para el gráfico de pie
+  const pieData = [
+    { name: 'Completadas', value: stats.completedTasks, color: '#10b981' },
+    { name: 'Pendientes', value: stats.pendingTasks, color: '#ef4444' }
+  ];
+
+  // Datos para el gráfico de barras por categoría
+  const categoryData = [
+    { categoria: 'Autenticación', completadas: 3, total: 3 },
+    { categoria: 'Base de Datos', completadas: 2, total: 4 },
+    { categoria: 'Interfaz', completadas: 4, total: 5 },
+    { categoria: 'Equipos', completadas: 5, total: 5 },
+    { categoria: 'Reportes', completadas: 3, total: 3 },
+    { categoria: 'Optimización', completadas: 0, total: 3 }
+  ];
+
   // Avances recientes
   const recentUpdates = [
-    { date: "16-may-2025", update: "Se ajustó el flujo de autenticación (cambio de JWT a cookies) para garantizar un login, cambio de contraseña y logout automáticos y seguros." },
-    { date: "16-may-2025", update: "Se creó un servicio de hashing seguro (PasswordService)" },
-    { date: "16-may-2025", update: "Se reforzaron los headers de seguridad (CSP, X-Frame-Options, etc.)." },
-    { date: "16-may-2025", update: "Se optimizó el rendimiento (compresión y cacheo)" },
+    { date: "22-may-2025", update: "Añadidos gráficos de progreso al dashboard" },
+    { date: "22-may-2025", update: "Implementada persistencia de imágenes con localStorage" },
+    { date: "20-may-2025", update: "Modifique la búsqueda para que busque por ID exacto del equipo" },
+    { date: "20-may-2025", update: "Mejore la función de actualización de la tabla" },
+    { date: "20-may-2025", update: "Manejo robusto de errores" },
+    { date: "19-may-2025", update: "Corrección de errores de sincronización" },
   ];
 
   // Categorías para agrupar tareas
@@ -71,11 +94,10 @@ const ProjectTracker = () => {
     { title: "Autenticación y Usuarios", items: ['login', 'userAdmin', 'passwordManagement'] },
     { title: "Base de Datos", items: ['sqlConnection', 'crudOperations', 'dataBackup', 'dataIntegrity'] },
     { title: "Interfaz de Usuario", items: ['interfaceDesign', 'responsiveDesign', 'adminDropdown', 'fishAnimations', 'frontendImprovements'] },
-    { title: "Gestión de Equipos", items: ['equipmentListing', 'addEquipment', 'editEquipment', 'deleteEquipment', 'searchEquipment', 'filteringOptions'] },
+    { title: "Gestión de Equipos", items: ['equipmentListing', 'addEquipment', 'editEquipment', 'deleteEquipment', 'searchEquipment'] },
     { title: "Reportes", items: ['excelExport', 'completeReport', 'historyView'] },
     { title: "Optimización y Seguridad", items: ['performanceOptimization', 'securityEnhancements', 'errorHandling'] }
   ];
-
 
   // Mapeo de claves a nombres legibles
   const taskNames = {
@@ -96,9 +118,8 @@ const ProjectTracker = () => {
     editEquipment: "Editar equipos",
     deleteEquipment: "Eliminar equipos",
     searchEquipment: "Búsqueda de equipos",
-    filteringOptions: "Filtrado avanzado",
     excelExport: "Exportar a Excel",
-    completeReport: "Excel completo con todo tipo de dato.",
+    completeReport: "Excel completo con todo tipo de dato",
     historyView: "Vista de historial",
     performanceOptimization: "Optimización de rendimiento",
     securityEnhancements: "Mejoras de seguridad",
@@ -126,218 +147,129 @@ const ProjectTracker = () => {
     { field: "Observación", type: "TextArea" }
   ];
 
-  // ---------- SECTION: EVIDENCE TRACKER STATE ----------
-  const [evidences, setEvidences] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Cargar evidencias al iniciar
-  useEffect(() => {
-    fetchEvidences();
-  }, []);
-
-  // Función para cargar las evidencias desde el backend
-  const fetchEvidences = async () => {
-    try {
-      const response = await fetch(API_ENDPOINTS.FILES);
-      if (!response.ok) throw new Error('Error al cargar las evidencias');
-      const files = await response.json();
-      
-      // Transformar los archivos en el formato de evidencias
-      const evidencesList = files.map((file, index) => ({
-        id: index + 1,
-        title: file.name.split('.')[0],
-        description: `Archivo ${file.type}`,
-        category: 'Interfaz',
-        date: new Date().toLocaleDateString(),
-        file: `http://localhost:3001${file.url}`,
-        fileType: file.type.startsWith('image/') ? 'image' : 'video',
-        fileName: file.name
-      }));
-      
-      setEvidences(evidencesList);
-      setLoading(false);
-    } catch (err) {
-      setError(err.message);
-      setLoading(false);
+  // Estado para las fotos
+  const [photos, setPhotos] = useState(() => {
+    // Cargar fotos desde localStorage al iniciar
+    const savedPhotos = localStorage.getItem('projectPhotos');
+    if (savedPhotos) {
+      return JSON.parse(savedPhotos);
     }
-  };
-
-  // Estado para manejar el formulario de nueva evidencia
-  const [newEvidence, setNewEvidence] = useState({
-    title: '',
-    description: '',
-    category: 'Interfaz',
-    file: null,
-    filePreview: null,
-    fileType: null // 'image' o 'video'
+    return [
+      {
+        id: 1,
+        title: "Login",
+        url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%234F46E5'/%3E%3Ctext x='200' y='150' font-family='Arial' font-size='24' fill='white' text-anchor='middle'%3EPantalla de Login%3C/text%3E%3C/svg%3E",
+        description: "Pantalla de inicio de sesión del sistema"
+      }
+    ];
   });
 
-  // Estado para mostrar/ocultar el formulario
-  const [showEvidenceForm, setShowEvidenceForm] = useState(false);
+  const [newPhoto, setNewPhoto] = useState({
+    title: '',
+    file: null,
+    preview: null,
+    description: ''
+  });
 
-  // Estado para la vista de detalle de evidencia
-  const [selectedEvidence, setSelectedEvidence] = useState(null);
-
-  // Estado para el filtrado de evidencias
-  const [evidenceFilter, setEvidenceFilter] = useState('Todos');
-
-  // Categorías para evidencias
-  const evidenceCategories = [
-    "Autenticación",
-    "Base de Datos",
-    "Interfaz",
-    "Equipos",
-    "Reportes",
-    "Optimización",
-    "Seguridad",
-    "Validaciones",
-    "Otro"
-  ];
-
-  // Estado para manejar errores en la carga de archivos
+  const [showPhotoForm, setShowPhotoForm] = useState(false);
   const [fileError, setFileError] = useState('');
+  const [uploading, setUploading] = useState(false);
 
-  // ---------- SECTION: EVIDENCE TRACKER FUNCTIONS ----------
-  // Función para manejar la carga de archivos
+  // Guardar fotos en localStorage cuando cambien
+  useEffect(() => {
+    localStorage.setItem('projectPhotos', JSON.stringify(photos));
+  }, [photos]);
+
+  // Función para manejar la selección de archivo
   const handleFileChange = (e) => {
     setFileError('');
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      if (selectedFile.size > 50 * 1024 * 1024) { // 50 MB
-        setFileError('El archivo es demasiado grande. El máximo permitido es 50 MB.');
+    const file = e.target.files[0];
+    
+    if (file) {
+      // Verificar el tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        setFileError('Por favor, selecciona solo archivos de imagen');
         return;
       }
-      const fileType = selectedFile.type.startsWith('image/') ? 'image' : 'video';
+
+      // Verificar el tamaño (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setFileError('La imagen debe ser menor a 5MB');
+        return;
+      }
+
+      // Crear una URL para la vista previa
       const reader = new FileReader();
-      
       reader.onloadend = () => {
-        setNewEvidence({
-          ...newEvidence,
-          file: selectedFile,
-          filePreview: reader.result,
-          fileType: fileType
-        });
+        setNewPhoto(prev => ({
+          ...prev,
+          file: file,
+          preview: reader.result
+        }));
       };
-      
-      reader.readAsDataURL(selectedFile);
+      reader.readAsDataURL(file);
     }
   };
 
   // Función para manejar cambios en el formulario
-  const handleEvidenceChange = (e) => {
+  const handlePhotoChange = (e) => {
     const { name, value } = e.target;
-    setNewEvidence({ ...newEvidence, [name]: value });
+    setNewPhoto(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
-  // Función para agregar una nueva evidencia
-  const handleAddEvidence = async (e) => {
+  // Función para añadir una nueva foto
+  const handleAddPhoto = async (e) => {
     e.preventDefault();
-    
+    if (!newPhoto.preview || !newPhoto.title) return;
+
     try {
-      const formData = new FormData();
-      formData.append('file', newEvidence.file);
+      setUploading(true);
       
-      const response = await fetch(API_ENDPOINTS.UPLOAD, {
-        method: 'POST',
-        body: formData
-      });
+      // Simular un pequeño delay para mejor UX
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      if (!response.ok) throw new Error('Error al subir el archivo');
-      
-      const result = await response.json();
-      
-      // Crear objeto de nueva evidencia
-      const currentDate = new Date();
-      const formattedDate = `${currentDate.getDate()}-${getMonthName(currentDate.getMonth())}-${currentDate.getFullYear()}`;
-      
-      const newEvidenceItem = {
-        id: evidences.length + 1,
-        title: newEvidence.title,
-        description: newEvidence.description,
-        category: newEvidence.category,
-        date: formattedDate,
-        file: `http://localhost:3001${result.fileUrl}`,
-        fileType: newEvidence.fileType,
-        fileName: result.fileName
+      // Agregar la nueva foto al estado
+      const newPhotoData = {
+        id: Date.now(),
+        title: newPhoto.title,
+        url: newPhoto.preview,
+        description: newPhoto.description || 'Sin descripción'
       };
       
-      // Actualizar el estado
-      setEvidences([newEvidenceItem, ...evidences]);
-      
-      // Reiniciar el formulario
-      setNewEvidence({
+      setPhotos(prev => [newPhotoData, ...prev]);
+
+      // Limpiar el formulario
+      setNewPhoto({
         title: '',
-        description: '',
-        category: 'Interfaz',
         file: null,
-        filePreview: null,
-        fileType: null
+        preview: null,
+        description: ''
       });
-      
-      // Ocultar el formulario
-      setShowEvidenceForm(false);
-      
+      setShowPhotoForm(false);
     } catch (err) {
-      setFileError('Error al subir el archivo: ' + err.message);
+      setFileError(err.message);
+    } finally {
+      setUploading(false);
     }
   };
 
-  // Función auxiliar para obtener el nombre del mes
-  const getMonthName = (monthIndex) => {
-    const months = [
-      'ene', 'feb', 'mar', 'abr', 'may', 'jun', 
-      'jul', 'ago', 'sep', 'oct', 'nov', 'dic'
-    ];
-    return months[monthIndex];
-  };
-
-  // Función para eliminar una evidencia
-  const handleDeleteEvidence = async (id) => {
-    try {
-      const evidence = evidences.find(e => e.id === id);
-      if (!evidence) return;
-
-      const response = await fetch(API_ENDPOINTS.DELETE_FILE(evidence.fileName), {
-        method: 'DELETE'
-      });
-
-      if (!response.ok) throw new Error('Error al eliminar el archivo');
-
-      // Actualizar el estado local
-      setEvidences(evidences.filter(e => e.id !== id));
-      
-      // Si hay una evidencia seleccionada y es la que se está eliminando, cerrar el modal
-      if (selectedEvidence && selectedEvidence.id === id) {
-        handleCloseEvidenceDetail();
-      }
-    } catch (err) {
-      setError('Error al eliminar el archivo: ' + err.message);
+  // Función para eliminar una foto
+  const handleDeletePhoto = (id) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar esta foto?')) {
+      setPhotos(prev => prev.filter(photo => photo.id !== id));
     }
   };
-
-  // Función para mostrar el detalle de una evidencia
-  const handleViewEvidence = (evidence) => {
-    setSelectedEvidence(evidence);
-  };
-
-  // Función para cerrar el detalle de evidencia
-  const handleCloseEvidenceDetail = () => {
-    setSelectedEvidence(null);
-  };
-
-  // Filtrar evidencias según la categoría seleccionada
-  const filteredEvidences = evidenceFilter === 'Todos' 
-    ? evidences 
-    : evidences.filter(evidence => evidence.category === evidenceFilter);
 
   // ---------- SECTION: MAIN RENDER ----------
   return (
-    <div className="p-6 bg-gray-50">
+    <div className="p-6 bg-gray-50 min-h-screen">
       {/* Título General de la Página */}
       <div className="mb-8 text-center animate-fadeIn">
         <h1 className="text-3xl font-bold text-blue-800 mb-2">Sistema de Seguimiento de Proyectos</h1>
-        <p className="text-gray-600">Dashboard de progreso y evidencias</p>
+        <p className="text-gray-600">Dashboard de progreso - Actualizado: 22 de mayo de 2025</p>
       </div>
 
       {/* Tabs para navegar entre secciones */}
@@ -345,8 +277,11 @@ const ProjectTracker = () => {
         <a href="#progreso" className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium whitespace-nowrap hover:bg-blue-700 transition-colors">
           Progreso del Proyecto
         </a>
-        <a href="#evidencias" className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium whitespace-nowrap hover:bg-blue-700 transition-colors">
-          Evidencias de Avance
+        <a href="#graficos" className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium whitespace-nowrap hover:bg-blue-700 transition-colors">
+          Gráficos de Análisis
+        </a>
+        <a href="#fotos" className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium whitespace-nowrap hover:bg-blue-700 transition-colors">
+          Fotos del Proyecto
         </a>
         <a href="#campos" className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium whitespace-nowrap hover:bg-blue-700 transition-colors">
           Campos Implementados
@@ -364,7 +299,7 @@ const ProjectTracker = () => {
               </svg>
               Progreso del Proyecto
             </h2>
-            <p className="text-gray-600">Actualizado el 14 de mayo de 2025</p>
+            <p className="text-gray-600">Monitoreo en tiempo real del avance</p>
           </div>
           
           {/* Barra de progreso principal con animación */}
@@ -487,118 +422,123 @@ const ProjectTracker = () => {
         </div>
       </section>
 
-      {/* SECCIÓN 2: EVIDENCIAS DE AVANCE */}
-      <section id="evidencias" className="mb-10">
-        <div className="mb-8 bg-white p-6 rounded-xl shadow border border-gray-100 animate-fadeIn">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold text-blue-700 flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+      {/* SECCIÓN DE GRÁFICOS */}
+      <section id="graficos" className="mb-10">
+        <div className="bg-white p-6 rounded-xl shadow-lg">
+          <h2 className="text-2xl font-bold mb-6 text-blue-800 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+            </svg>
+            Análisis Visual del Progreso
+          </h2>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Gráfico de línea - Progreso mensual */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">Evolución del Progreso</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={progressData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="mes" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="completadas" stroke="#10b981" strokeWidth={2} name="Completadas" />
+                  <Line type="monotone" dataKey="pendientes" stroke="#ef4444" strokeWidth={2} name="Pendientes" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Gráfico de pie - Estado actual */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">Estado Actual del Proyecto</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Gráfico de barras - Por categoría */}
+            <div className="bg-gray-50 p-4 rounded-lg lg:col-span-2">
+              <h3 className="text-lg font-semibold mb-4 text-gray-700">Progreso por Categoría</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={categoryData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="categoria" angle={-45} textAnchor="end" height={80} />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="completadas" fill="#10b981" name="Completadas" />
+                  <Bar dataKey="total" fill="#3b82f6" name="Total" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECCIÓN DE FOTOS */}
+      <section id="fotos" className="mb-10">
+        <div className="bg-white p-6 rounded-xl shadow-lg">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-blue-800 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
               </svg>
-              Evidencias de Avance
-            </h3>
+              Fotos del Proyecto ({photos.length})
+            </h2>
             <button 
-              onClick={() => setShowEvidenceForm(!showEvidenceForm)} 
+              onClick={() => setShowPhotoForm(!showPhotoForm)}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
               </svg>
-              {showEvidenceForm ? 'Cancelar' : 'Agregar Evidencia'}
+              {showPhotoForm ? 'Cancelar' : 'Agregar Foto'}
             </button>
           </div>
 
-          {/* Filtro de categorías */}
-          <div className="mb-4 flex flex-wrap gap-2">
-            <button 
-              onClick={() => setEvidenceFilter('Todos')} 
-              className={`px-3 py-1 rounded-full text-sm ${
-                evidenceFilter === 'Todos' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              Todos
-            </button>
-            {evidenceCategories.map((category, index) => (
-              <button 
-                key={index} 
-                onClick={() => setEvidenceFilter(category)} 
-                className={`px-3 py-1 rounded-full text-sm ${
-                  evidenceFilter === category 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-
-          {/* Mostrar mensaje de error si existe */}
-          {error && (
+          {fileError && (
             <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-              {error}
+              {fileError}
             </div>
           )}
 
-          {/* Mostrar indicador de carga */}
-          {loading && (
-            <div className="text-center py-10">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-600 border-t-transparent"></div>
-              <p className="mt-2 text-gray-600">Cargando evidencias...</p>
-            </div>
-          )}
-
-          {/* Formulario para agregar nueva evidencia */}
-          {showEvidenceForm && (
+          {/* Formulario para agregar nueva foto */}
+          {showPhotoForm && (
             <div className="bg-blue-50 p-4 rounded-lg mb-6 animate-fadeIn border border-blue-100">
-              <h4 className="text-md font-semibold mb-3 text-blue-800">Nueva Evidencia</h4>
-              <form onSubmit={handleAddEvidence} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                    <input 
-                      type="text" 
-                      name="title" 
-                      value={newEvidence.title} 
-                      onChange={handleEvidenceChange} 
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Nombre de la funcionalidad"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-                    <select 
-                      name="category" 
-                      value={newEvidence.category} 
-                      onChange={handleEvidenceChange} 
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                      required
-                    >
-                      {evidenceCategories.map((category, index) => (
-                        <option key={index} value={category}>{category}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                
+              <h4 className="text-md font-semibold mb-3 text-blue-800">Nueva Foto</h4>
+              <form onSubmit={handleAddPhoto} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                  <textarea 
-                    name="description" 
-                    value={newEvidence.description} 
-                    onChange={handleEvidenceChange} 
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Título *</label>
+                  <input 
+                    type="text" 
+                    name="title" 
+                    value={newPhoto.title} 
+                    onChange={handlePhotoChange} 
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Breve descripción de la funcionalidad implementada"
-                    rows="3"
+                    placeholder="Ej: Vista del Dashboard"
                     required
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Archivo de Evidencia</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Seleccionar Imagen *</label>
                   <div className="mt-1 flex items-center">
                     <label className="flex flex-col items-center px-4 py-2 bg-white text-blue-700 rounded-lg shadow-lg tracking-wide border border-blue-500 cursor-pointer hover:bg-blue-500 hover:text-white transition-colors">
                       <svg className="w-6 h-6" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -608,135 +548,154 @@ const ProjectTracker = () => {
                       <input 
                         type='file' 
                         className="hidden" 
-                        accept="image/*,video/*" 
+                        accept="image/*" 
                         onChange={handleFileChange} 
                         required 
                       />
                     </label>
-                    
-                    {fileError && (
-                      <div className="text-red-600 text-sm mb-2">{fileError}</div>
-                    )}
                   </div>
+                  {fileError && (
+                    <div className="text-red-600 text-sm mt-2">{fileError}</div>
+                  )}
+                  {newPhoto.preview && (
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-600 mb-2">Vista previa:</p>
+                      <img 
+                        src={newPhoto.preview} 
+                        alt="Vista previa" 
+                        className="max-h-48 rounded-lg shadow-md"
+                      />
+                    </div>
+                  )}
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Descripción (opcional)</label>
+                  <textarea 
+                    name="description" 
+                    value={newPhoto.description} 
+                    onChange={handlePhotoChange} 
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Describe brevemente la imagen"
+                    rows="3"
+                  />
                 </div>
                 
                 <div className="flex justify-end pt-2">
                   <button
                     type="button"
-                    onClick={() => setShowEvidenceForm(false)}
+                    onClick={() => {
+                      setNewPhoto({
+                        title: '',
+                        file: null,
+                        preview: null,
+                        description: ''
+                      });
+                      setShowPhotoForm(false);
+                      setFileError('');
+                    }}
                     className="mr-2 bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 border border-gray-300 rounded-md shadow-sm"
+                    disabled={uploading}
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm flex items-center"
+                    disabled={uploading || !newPhoto.preview || !newPhoto.title}
                   >
-                    Guardar Evidencia
+                    {uploading ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Guardando...
+                      </>
+                    ) : (
+                      'Guardar Foto'
+                    )}
                   </button>
                 </div>
               </form>
             </div>
           )}
 
-          {/* Grid de evidencias */}
-          {filteredEvidences.length === 0 ? (
-            <div className="text-center py-10 text-gray-500">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <p className="text-lg font-medium">No hay evidencias disponibles</p>
-              <p className="mt-1">Agrega evidencias para mostrar el progreso del proyecto</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredEvidences.map((evidence) => (
-                <div key={evidence.id} className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow border border-gray-200 flex flex-col">
-                  <div 
-                    className="h-48 bg-gray-100 overflow-hidden relative cursor-pointer"
-                    onClick={() => handleViewEvidence(evidence)}
-                  >
-                    {evidence.file ? (
-                      evidence.fileType === 'image' ? (
-                        <img 
-                          src={evidence.file} 
-                          alt={evidence.title} 
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <video 
-                          src={evidence.file} 
-                          className="w-full h-full object-cover"
-                          controls
-                        />
-                      )
-                    ) : (
-                      <div className="h-full flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                    )}
-                    <div className="absolute top-0 right-0 p-2">
-                      <span className="inline-block bg-blue-600 text-white text-xs px-2 py-1 rounded-lg shadow-md">
-                        {evidence.category}
-                      </span>
-                    </div>
-                    <div className="absolute inset-0 bg-black bg-opacity-20 opacity-0 hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
-                      <span className="bg-white text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
-                        Ver detalle
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-4 flex-grow">
-                    <div className="flex justify-between items-start">
-                      <h4 className="text-lg font-semibold text-gray-800 mb-1">{evidence.title}</h4>
+          {/* Grid de fotos */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {photos.length === 0 ? (
+              <div className="col-span-full text-center py-12 text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p className="text-lg">No hay fotos agregadas todavía</p>
+                <p className="text-sm mt-2">Haz clic en "Agregar Foto" para comenzar</p>
+              </div>
+            ) : (
+              photos.map((photo) => (
+                <div key={photo.id} className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow border border-gray-200 group">
+                  <div className="relative aspect-video">
+                    <img 
+                      src={photo.url} 
+                      alt={photo.title}
+                      className="w-full h-full object-cover"
+                    />
+                    {photo.id !== 1 && ( // No permitir eliminar la foto de login
                       <button 
-                        onClick={() => handleDeleteEvidence(evidence.id)} 
-                        className="text-red-500 hover:text-red-700 transition-colors"
-                        title="Eliminar evidencia"
+                        onClick={() => handleDeletePhoto(photo.id)}
+                        className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition-all opacity-0 group-hover:opacity-100"
+                        title="Eliminar foto"
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
                         </svg>
                       </button>
-                    </div>
-                    <p className="text-gray-600 text-sm mb-3">{evidence.description}</p>
-                    <div className="text-xs text-gray-500">
-                      {evidence.date}
-                    </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-1">{photo.title}</h3>
+                    <p className="text-gray-600 text-sm">{photo.description}</p>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            )}
+          </div>
         </div>
       </section>
 
       {/* SECCIÓN 3: CAMPOS IMPLEMENTADOS */}
       <section id="campos" className="mb-10">
-        <div className="mt-6 p-6 bg-white rounded-xl shadow border border-gray-100 animate-slideInFromBottom">
-          <h3 className="text-lg font-bold mb-4 text-blue-700 flex items-center border-b pb-3">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+        <div className="bg-white p-6 rounded-xl shadow-lg">
+          <h2 className="text-2xl font-bold mb-6 text-blue-800 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" clipRule="evenodd" />
             </svg>
-            Campos del Inventario
-          </h3>
+            Campos del Sistema de Inventario
+          </h2>
+          
+          <div className="bg-blue-50 p-4 rounded-lg mb-4">
+            <p className="text-blue-800 text-sm">
+              <strong>Total de campos implementados:</strong> {implementedFields.length} de {implementedFields.length} campos
+            </p>
+          </div>
+
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white rounded-lg overflow-hidden">
               <thead>
-                <tr className="bg-gradient-to-r from-blue-50 to-blue-100 text-blue-800">
+                <tr className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+                  <th className="py-3 px-4 text-left font-semibold">#</th>
                   <th className="py-3 px-4 text-left font-semibold">Campo</th>
-                  <th className="py-3 px-4 text-left font-semibold">Tipo</th>
+                  <th className="py-3 px-4 text-left font-semibold">Tipo de Dato</th>
                   <th className="py-3 px-4 text-left font-semibold">Estado</th>
                 </tr>
               </thead>
               <tbody>
                 {implementedFields.map((field, index) => (
                   <tr key={index} className={`hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} transition-colors`}>
+                    <td className="py-3 px-4 border-b border-gray-100 text-gray-600">{index + 1}</td>
                     <td className="py-3 px-4 border-b border-gray-100 font-medium">{field.field}</td>
                     <td className="py-3 px-4 border-b border-gray-100">
-                      <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                         field.type === 'Select' ? 'bg-purple-100 text-purple-800' : 
                         field.type === 'Date' ? 'bg-yellow-100 text-yellow-800' : 
                         field.type === 'TextArea' ? 'bg-indigo-100 text-indigo-800' : 
@@ -746,9 +705,9 @@ const ProjectTracker = () => {
                         {field.type}
                       </span>
                     </td>
-                    <td className="py-3 px-4 border-b border-gray-100 text-green-600 font-semibold">
-                      <div className="flex items-center">
-                        <svg className="w-4 h-4 mr-1.5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                    <td className="py-3 px-4 border-b border-gray-100">
+                      <div className="flex items-center text-green-600 font-semibold">
+                        <svg className="w-5 h-5 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
                         </svg>
                         Implementado
@@ -759,103 +718,28 @@ const ProjectTracker = () => {
               </tbody>
             </table>
           </div>
-        </div>
-      </section>
 
-      {/* Modal de vista detallada de evidencia */}
-      {selectedEvidence && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-xl w-full max-w-4xl max-h-screen overflow-y-auto">
-            <div className="sticky top-0 bg-white p-4 border-b flex justify-between items-center">
-              <h3 className="text-xl font-bold text-gray-800">{selectedEvidence.title}</h3>
-              <button 
-                onClick={handleCloseEvidenceDetail} 
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="p-6">
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="md:w-1/2">
-                  {selectedEvidence.file ? (
-                    selectedEvidence.fileType === 'image' ? (
-                      <img 
-                        src={selectedEvidence.file} 
-                        alt={selectedEvidence.title} 
-                        className="w-full h-auto rounded-lg shadow-md"
-                      />
-                    ) : (
-                      <video 
-                        src={selectedEvidence.file} 
-                        className="w-full h-auto rounded-lg shadow-md"
-                        controls
-                      />
-                    )
-                  ) : (
-                    <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-                <div className="md:w-1/2">
-                  <div className="mb-4">
-                    <span className="inline-block bg-blue-600 text-white text-sm px-3 py-1 rounded-full mb-2">
-                      {selectedEvidence.category}
-                    </span>
-                    <div className="text-sm text-gray-500 mb-2">
-                      Agregado el {selectedEvidence.date}
-                    </div>
-                    <h4 className="text-lg font-semibold text-gray-800 mb-2">Descripción</h4>
-                    <p className="text-gray-600">{selectedEvidence.description}</p>
-                  </div>
-                  
-                  <div className="border-t pt-4 mt-6">
-                    <h4 className="text-lg font-semibold text-gray-800 mb-2">Acciones</h4>
-                    <div className="flex space-x-3">
-                      <button 
-                        onClick={() => {
-                          handleDeleteEvidence(selectedEvidence.id);
-                          handleCloseEvidenceDetail();
-                        }} 
-                        className="flex items-center text-red-600 hover:text-red-800"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                        Eliminar
-                      </button>
-                      <button 
-                        onClick={() => {
-                          const link = document.createElement('a');
-                          link.href = selectedEvidence.file;
-                          link.download = `${selectedEvidence.title}.${selectedEvidence.fileType === 'image' ? 'jpg' : 'mp4'}`;
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                        }}
-                        className="flex items-center text-green-600 hover:text-green-800"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                        Descargar
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div className="mt-6 p-4 bg-green-50 rounded-lg">
+            <div className="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <p className="text-green-800 font-medium">
+                Todos los campos han sido implementados exitosamente en el sistema.
+              </p>
             </div>
           </div>
         </div>
-      )}
+      </section>
+
+      {/* Footer */}
+      <footer className="text-center text-gray-600 py-8">
+        <p>Sistema de Seguimiento de Proyectos </p>
+        <p className="text-sm mt-2">© Todos los derechos reservados - Catalina Núñez 2025</p>
+      </footer>
 
       {/* Estilos CSS para animaciones */}
-      <style jsx>{`
+      <style>{`
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
