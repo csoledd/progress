@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const ProjectTracker = () => {
   // ---------- SECTION: TASK TRACKER STATE ----------
@@ -48,41 +47,35 @@ const ProjectTracker = () => {
 
   // Stats corregidos
   const stats = {
-    completedTasks: 19,
+    completedTasks: 17,
     totalTasks: 23,
-    pendingTasks: 4,
-    completionPercentage: Math.round((19 / 23) * 100)
+    pendingTasks: 6,
+    completionPercentage: Math.round((17 / 23) * 100)
   };
 
   // Datos para el gráfico de progreso
   const progressData = [
-    { mes: 'Enero', completadas: 5, pendientes: 18 },
-    { mes: 'Febrero', completadas: 8, pendientes: 15 },
-    { mes: 'Marzo', completadas: 12, pendientes: 11 },
-    { mes: 'Abril', completadas: 15, pendientes: 8 },
-    { mes: 'Mayo', completadas: 17, pendientes: 6 }
-  ];
-
-  // Datos para el gráfico de pie
-  const pieData = [
-    { name: 'Completadas', value: stats.completedTasks, color: '#10b981' },
-    { name: 'Pendientes', value: stats.pendingTasks, color: '#ef4444' }
+    { mes: 'Enero', completadas: 5, pendientes: 18, porcentaje: 22 },
+    { mes: 'Febrero', completadas: 8, pendientes: 15, porcentaje: 35 },
+    { mes: 'Marzo', completadas: 12, pendientes: 11, porcentaje: 52 },
+    { mes: 'Abril', completadas: 15, pendientes: 8, porcentaje: 65 },
+    { mes: 'Mayo', completadas: 17, pendientes: 6, porcentaje: 74 }
   ];
 
   // Datos para el gráfico de barras por categoría
   const categoryData = [
-    { categoria: 'Autenticación', completadas: 3, total: 3 },
-    { categoria: 'Base de Datos', completadas: 2, total: 4 },
-    { categoria: 'Interfaz', completadas: 4, total: 5 },
-    { categoria: 'Equipos', completadas: 5, total: 5 },
-    { categoria: 'Reportes', completadas: 3, total: 3 },
-    { categoria: 'Optimización', completadas: 0, total: 3 }
+    { categoria: 'Autenticación', completadas: 3, total: 3, porcentaje: 100 },
+    { categoria: 'Base de Datos', completadas: 2, total: 4, porcentaje: 50 },
+    { categoria: 'Interfaz', completadas: 4, total: 5, porcentaje: 80 },
+    { categoria: 'Equipos', completadas: 5, total: 5, porcentaje: 100 },
+    { categoria: 'Reportes', completadas: 3, total: 3, porcentaje: 100 },
+    { categoria: 'Optimización', completadas: 0, total: 3, porcentaje: 0 }
   ];
 
   // Avances recientes
   const recentUpdates = [
     { date: "22-may-2025", update: "Añadidos gráficos de progreso al dashboard" },
-    { date: "22-may-2025", update: "Implementada persistencia de imágenes con localStorage" },
+    { date: "22-may-2025", update: "Implementada galería de imágenes del proyecto" },
     { date: "20-may-2025", update: "Modifique la búsqueda para que busque por ID exacto del equipo" },
     { date: "20-may-2025", update: "Mejore la función de actualización de la tabla" },
     { date: "20-may-2025", update: "Manejo robusto de errores" },
@@ -147,121 +140,44 @@ const ProjectTracker = () => {
     { field: "Observación", type: "TextArea" }
   ];
 
-  // Estado para las fotos
-  const [photos, setPhotos] = useState(() => {
-    // Cargar fotos desde localStorage al iniciar
-    const savedPhotos = localStorage.getItem('projectPhotos');
-    if (savedPhotos) {
-      return JSON.parse(savedPhotos);
-    }
-    return [
-      {
-        id: 1,
-        title: "Login",
-        url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%234F46E5'/%3E%3Ctext x='200' y='150' font-family='Arial' font-size='24' fill='white' text-anchor='middle'%3EPantalla de Login%3C/text%3E%3C/svg%3E",
-        description: "Pantalla de inicio de sesión del sistema"
-      }
-    ];
-  });
+  // IMPORTANTE: Aquí defines las fotos que estarán disponibles para todos
+  // Debes subir las imágenes a la carpeta public/images/ de tu repositorio
+  const projectPhotos = [
+    {
+      id: 1,
+      title: "Pantalla de Login",
+      url: "/progress-tracker/images/login.png", // Ruta relativa a tu GitHub Pages
+      description: "Pantalla de inicio de sesión del sistema con diseño moderno"
+    },
+        {
+      id: 2,
+      title: "Login",
+      url: "/progress-tracker/images/loginekis.png", // Ruta relativa a tu GitHub Pages
+      description: "Pantalla de inicio de sesión del sistema con diseño moderno"
+    },
 
-  const [newPhoto, setNewPhoto] = useState({
-    title: '',
-    file: null,
-    preview: null,
-    description: ''
-  });
+    {
+      id: 3,
+      title: "Dashboard Principal",
+      url: "/progress-tracker/images/home.png",
+      description: "Vista general del dashboard con estadísticas en tiempo real"
+    },
+    {
+      id: 4,
+      title: " Agregar Equipos",
+      url: "/progress-tracker/images/equipos.png",
+      description: "Interfaz de administración de equipos con búsqueda avanzada"
+    },
+    {
+      id: 5,
+      title: "Reportes Excel",
+      url: "/progress-tracker/images/generareporte.png",
+      description: "Sistema de generación de reportes en formato Excel"
+    },
+    // Añade más fotos aquí según las subas a tu repositorio
+  ];
 
   const [showPhotoForm, setShowPhotoForm] = useState(false);
-  const [fileError, setFileError] = useState('');
-  const [uploading, setUploading] = useState(false);
-
-  // Guardar fotos en localStorage cuando cambien
-  useEffect(() => {
-    localStorage.setItem('projectPhotos', JSON.stringify(photos));
-  }, [photos]);
-
-  // Función para manejar la selección de archivo
-  const handleFileChange = (e) => {
-    setFileError('');
-    const file = e.target.files[0];
-    
-    if (file) {
-      // Verificar el tipo de archivo
-      if (!file.type.startsWith('image/')) {
-        setFileError('Por favor, selecciona solo archivos de imagen');
-        return;
-      }
-
-      // Verificar el tamaño (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setFileError('La imagen debe ser menor a 5MB');
-        return;
-      }
-
-      // Crear una URL para la vista previa
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewPhoto(prev => ({
-          ...prev,
-          file: file,
-          preview: reader.result
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Función para manejar cambios en el formulario
-  const handlePhotoChange = (e) => {
-    const { name, value } = e.target;
-    setNewPhoto(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  // Función para añadir una nueva foto
-  const handleAddPhoto = async (e) => {
-    e.preventDefault();
-    if (!newPhoto.preview || !newPhoto.title) return;
-
-    try {
-      setUploading(true);
-      
-      // Simular un pequeño delay para mejor UX
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Agregar la nueva foto al estado
-      const newPhotoData = {
-        id: Date.now(),
-        title: newPhoto.title,
-        url: newPhoto.preview,
-        description: newPhoto.description || 'Sin descripción'
-      };
-      
-      setPhotos(prev => [newPhotoData, ...prev]);
-
-      // Limpiar el formulario
-      setNewPhoto({
-        title: '',
-        file: null,
-        preview: null,
-        description: ''
-      });
-      setShowPhotoForm(false);
-    } catch (err) {
-      setFileError(err.message);
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  // Función para eliminar una foto
-  const handleDeletePhoto = (id) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar esta foto?')) {
-      setPhotos(prev => prev.filter(photo => photo.id !== id));
-    }
-  };
 
   // ---------- SECTION: MAIN RENDER ----------
   return (
@@ -434,59 +350,85 @@ const ProjectTracker = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Gráfico de línea - Progreso mensual */}
-            <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="bg-gray-50 p-6 rounded-lg">
               <h3 className="text-lg font-semibold mb-4 text-gray-700">Evolución del Progreso</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={progressData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mes" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="completadas" stroke="#10b981" strokeWidth={2} name="Completadas" />
-                  <Line type="monotone" dataKey="pendientes" stroke="#ef4444" strokeWidth={2} name="Pendientes" />
-                </LineChart>
-              </ResponsiveContainer>
+              <div className="h-64 relative">
+                <div className="absolute bottom-0 left-0 right-0 flex justify-between items-end h-full px-2">
+                  {progressData.map((data, index) => (
+                    <div key={index} className="flex flex-col items-center flex-1">
+                      <div className="w-full flex flex-col items-center justify-end h-full pb-8">
+                        <div 
+                          className="w-8 bg-gradient-to-t from-blue-500 to-blue-300 rounded-t-md transition-all duration-500 hover:opacity-80"
+                          style={{ height: `${data.porcentaje}%` }}
+                          title={`${data.completadas} completadas`}
+                        ></div>
+                      </div>
+                      <span className="text-xs text-gray-600 mt-2">{data.mes}</span>
+                      <span className="text-xs font-semibold text-blue-600">{data.porcentaje}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {/* Gráfico de pie - Estado actual */}
-            <div className="bg-gray-50 p-4 rounded-lg">
+            {/* Gráfico circular - Estado actual */}
+            <div className="bg-gray-50 p-6 rounded-lg">
               <h3 className="text-lg font-semibold mb-4 text-gray-700">Estado Actual del Proyecto</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+              <div className="relative h-64 flex items-center justify-center">
+                <div className="relative w-48 h-48">
+                  {/* Círculo de fondo */}
+                  <div className="absolute inset-0 rounded-full border-8 border-gray-200"></div>
+                  {/* Círculo de progreso */}
+                  <div 
+                    className="absolute inset-0 rounded-full border-8 border-green-500 transition-all duration-1000"
+                    style={{
+                      clipPath: `polygon(50% 50%, 50% 0%, ${stats.completionPercentage > 50 ? '100%' : `${50 + stats.completionPercentage}%`} 0%, ${stats.completionPercentage > 50 ? '100%' : '50%'} ${stats.completionPercentage > 50 ? `${(stats.completionPercentage - 50) * 2}%` : '50%'}, 50% 50%)`,
+                      transform: 'rotate(-90deg)'
+                    }}
+                  ></div>
+                  {/* Texto central */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-3xl font-bold text-gray-800">{stats.completionPercentage}%</span>
+                    <span className="text-sm text-gray-600">Completado</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-center mt-4 space-x-6">
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-green-500 rounded mr-2"></div>
+                  <span className="text-sm text-gray-600">Completadas ({stats.completedTasks})</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-gray-200 rounded mr-2"></div>
+                  <span className="text-sm text-gray-600">Pendientes ({stats.pendingTasks})</span>
+                </div>
+              </div>
             </div>
 
             {/* Gráfico de barras - Por categoría */}
-            <div className="bg-gray-50 p-4 rounded-lg lg:col-span-2">
+            <div className="bg-gray-50 p-6 rounded-lg lg:col-span-2">
               <h3 className="text-lg font-semibold mb-4 text-gray-700">Progreso por Categoría</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={categoryData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="categoria" angle={-45} textAnchor="end" height={80} />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="completadas" fill="#10b981" name="Completadas" />
-                  <Bar dataKey="total" fill="#3b82f6" name="Total" />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="space-y-4">
+                {categoryData.map((cat, index) => (
+                  <div key={index}>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm font-medium text-gray-700">{cat.categoria}</span>
+                      <span className="text-sm text-gray-600">{cat.completadas}/{cat.total}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full transition-all duration-500 ${
+                          cat.porcentaje === 100 ? 'bg-green-500' : 
+                          cat.porcentaje > 50 ? 'bg-blue-500' : 
+                          cat.porcentaje > 0 ? 'bg-yellow-500' : 
+                          'bg-gray-300'
+                        }`}
+                        style={{ width: `${cat.porcentaje}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -500,157 +442,78 @@ const ProjectTracker = () => {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
               </svg>
-              Fotos del Proyecto ({photos.length})
+              Fotos del Proyecto ({projectPhotos.length})
             </h2>
             <button 
               onClick={() => setShowPhotoForm(!showPhotoForm)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center"
+              className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors flex items-center"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
               </svg>
-              {showPhotoForm ? 'Cancelar' : 'Agregar Foto'}
+              Cómo agregar fotos
             </button>
           </div>
 
-          {fileError && (
-            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-              {fileError}
-            </div>
-          )}
-
-          {/* Formulario para agregar nueva foto */}
+          {/* Instrucciones para agregar fotos */}
           {showPhotoForm && (
-            <div className="bg-blue-50 p-4 rounded-lg mb-6 animate-fadeIn border border-blue-100">
-              <h4 className="text-md font-semibold mb-3 text-blue-800">Nueva Foto</h4>
-              <form onSubmit={handleAddPhoto} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Título *</label>
-                  <input 
-                    type="text" 
-                    name="title" 
-                    value={newPhoto.title} 
-                    onChange={handlePhotoChange} 
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Ej: Vista del Dashboard"
-                    required
-                  />
+            <div className="bg-blue-50 p-6 rounded-lg mb-6 animate-fadeIn border border-blue-100">
+              <h4 className="text-lg font-semibold mb-3 text-blue-800">📸 Cómo agregar nuevas fotos</h4>
+              <div className="space-y-3 text-gray-700">
+                <p className="flex items-start">
+                  <span className="font-bold text-blue-600 mr-2">1.</span>
+                  Guarda tus imágenes en la carpeta <code className="bg-gray-100 px-2 py-1 rounded text-sm">public/images/</code> de tu repositorio
+                </p>
+                <p className="flex items-start">
+                  <span className="font-bold text-blue-600 mr-2">2.</span>
+                  Nombra las imágenes descriptivamente (ej: dashboard.png, login-screen.jpg)
+                </p>
+                <p className="flex items-start">
+                  <span className="font-bold text-blue-600 mr-2">3.</span>
+                  Edita el archivo <code className="bg-gray-100 px-2 py-1 rounded text-sm">TaskTracker.js</code> y añade la nueva foto al array <code className="bg-gray-100 px-2 py-1 rounded text-sm">projectPhotos</code>
+                </p>
+                <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+                  <p className="text-sm font-semibold mb-2">Ejemplo de código:</p>
+                  <pre className="text-xs overflow-x-auto">
+{`{
+  id: 5,
+  title: "Nueva Funcionalidad",
+  url: "/progress-tracker/images/nueva-imagen.png",
+  description: "Descripción de la imagen"
+}`}
+                  </pre>
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Seleccionar Imagen *</label>
-                  <div className="mt-1 flex items-center">
-                    <label className="flex flex-col items-center px-4 py-2 bg-white text-blue-700 rounded-lg shadow-lg tracking-wide border border-blue-500 cursor-pointer hover:bg-blue-500 hover:text-white transition-colors">
-                      <svg className="w-6 h-6" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                      </svg>
-                      <span className="mt-2 text-sm leading-normal">Seleccionar archivo</span>
-                      <input 
-                        type='file' 
-                        className="hidden" 
-                        accept="image/*" 
-                        onChange={handleFileChange} 
-                        required 
-                      />
-                    </label>
-                  </div>
-                  {fileError && (
-                    <div className="text-red-600 text-sm mt-2">{fileError}</div>
-                  )}
-                  {newPhoto.preview && (
-                    <div className="mt-4">
-                      <p className="text-sm text-gray-600 mb-2">Vista previa:</p>
-                      <img 
-                        src={newPhoto.preview} 
-                        alt="Vista previa" 
-                        className="max-h-48 rounded-lg shadow-md"
-                      />
-                    </div>
-                  )}
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Descripción (opcional)</label>
-                  <textarea 
-                    name="description" 
-                    value={newPhoto.description} 
-                    onChange={handlePhotoChange} 
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Describe brevemente la imagen"
-                    rows="3"
-                  />
-                </div>
-                
-                <div className="flex justify-end pt-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNewPhoto({
-                        title: '',
-                        file: null,
-                        preview: null,
-                        description: ''
-                      });
-                      setShowPhotoForm(false);
-                      setFileError('');
-                    }}
-                    className="mr-2 bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 border border-gray-300 rounded-md shadow-sm"
-                    disabled={uploading}
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm flex items-center"
-                    disabled={uploading || !newPhoto.preview || !newPhoto.title}
-                  >
-                    {uploading ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Guardando...
-                      </>
-                    ) : (
-                      'Guardar Foto'
-                    )}
-                  </button>
-                </div>
-              </form>
+                <p className="flex items-start mt-4">
+                  <span className="font-bold text-blue-600 mr-2">4.</span>
+                  Haz commit y push de los cambios, luego ejecuta <code className="bg-gray-100 px-2 py-1 rounded text-sm">npm run deploy</code>
+                </p>
+              </div>
             </div>
           )}
 
           {/* Grid de fotos */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {photos.length === 0 ? (
+            {projectPhotos.length === 0 ? (
               <div className="col-span-full text-center py-12 text-gray-500">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <p className="text-lg">No hay fotos agregadas todavía</p>
-                <p className="text-sm mt-2">Haz clic en "Agregar Foto" para comenzar</p>
+                <p className="text-sm mt-2">Sigue las instrucciones para agregar fotos al proyecto</p>
               </div>
             ) : (
-              photos.map((photo) => (
+              projectPhotos.map((photo) => (
                 <div key={photo.id} className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow border border-gray-200 group">
-                  <div className="relative aspect-video">
+                  <div className="relative aspect-video bg-gray-100">
                     <img 
                       src={photo.url} 
                       alt={photo.title}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23e5e7eb'/%3E%3Ctext x='200' y='150' font-family='Arial' font-size='16' fill='%236b7280' text-anchor='middle'%3EImagen no disponible%3C/text%3E%3C/svg%3E";
+                      }}
                     />
-                    {photo.id !== 1 && ( // No permitir eliminar la foto de login
-                      <button 
-                        onClick={() => handleDeletePhoto(photo.id)}
-                        className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition-all opacity-0 group-hover:opacity-100"
-                        title="Eliminar foto"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                    )}
                   </div>
                   <div className="p-4">
                     <h3 className="text-lg font-semibold text-gray-800 mb-1">{photo.title}</h3>
@@ -659,6 +522,19 @@ const ProjectTracker = () => {
                 </div>
               ))
             )}
+          </div>
+
+          {/* Nota informativa */}
+          <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-600 mr-2 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <div className="text-sm text-yellow-800">
+                <p className="font-semibold mb-1">Nota importante:</p>
+                <p>Las imágenes deben ser subidas al repositorio de GitHub para que sean visibles para todos los usuarios. Las imágenes almacenadas localmente solo son visibles en tu navegador.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -734,8 +610,8 @@ const ProjectTracker = () => {
 
       {/* Footer */}
       <footer className="text-center text-gray-600 py-8">
-        <p>Sistema de Seguimiento de Proyectos </p>
-        <p className="text-sm mt-2">© Todos los derechos reservados - Catalina Núñez 2025</p>
+        <p>Sistema de Seguimiento de Proyectos © 2025</p>
+        <p className="text-sm mt-2">Desarrollado para el control y monitoreo del inventario de equipos</p>
       </footer>
 
       {/* Estilos CSS para animaciones */}
