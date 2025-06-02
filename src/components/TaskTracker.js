@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-const ProjectTracker = () => {
+const TaskTracker = () => {
   // ---------- SECTION: TASK TRACKER STATE ----------
   const [taskStatus, setTaskStatus] = useState({
     // Funcionalidades de autenticación
@@ -18,7 +18,7 @@ const ProjectTracker = () => {
     responsiveDesign: true,
     adminDropdown: true,
     fishAnimations: true,
-    frontendImprovements: false,
+    frontendImprovements: true,
     
     // Funcionalidades de equipos
     equipmentListing: true,
@@ -33,8 +33,6 @@ const ProjectTracker = () => {
     
     // Funcionalidades adicionales
     historyView: true,
-    userRoles: false,
-    dataBackup: false,
     
     // Optimizaciones
     performanceOptimization: true,
@@ -42,16 +40,15 @@ const ProjectTracker = () => {
     
     // Validaciones
     inputValidation: true,
-    errorHandling: false,
-    dataIntegrity: false,
+    errorHandling: true
   });
 
   // Stats corregidos
   const stats = {
-    completedTasks: 19,
-    totalTasks: 23,
-    pendingTasks: 4,
-    completionPercentage: Math.round((19 / 23) * 100)
+    completedTasks: 21,
+    totalTasks: 21,
+    pendingTasks: 0,
+    completionPercentage: Math.round((21 / 21) * 100)
   };
 
   // Datos para el gráfico de progreso
@@ -80,19 +77,21 @@ const ProjectTracker = () => {
   ];
 
   // Avances recientes
-  const recentUpdates = [
-    { date: "22-may-2025", update: "Añadidos gráficos de progreso al dashboard" },
-    { date: "22-may-2025", update: "Implementada persistencia de imágenes con localStorage" },
-    { date: "20-may-2025", update: "Modifique la búsqueda para que busque por ID exacto del equipo" },
-    { date: "20-may-2025", update: "Mejore la función de actualización de la tabla" },
-    { date: "20-may-2025", update: "Manejo robusto de errores" },
-    { date: "19-may-2025", update: "Corrección de errores de sincronización" },
-  ];
-
+  const recentUpdates =
+  [
+  { date: "02-junio-2025", update: "Implementado sistema de historial de equipos con funcionalidad de filtrado y búsqueda." },
+  { date: "02-junio-2025", update: "Agregada funcionalidad de restauración de equipos eliminados." },
+  { date: "02-junio-2025", update: "Mejorado el sistema de cambio de contraseñas con validaciones de seguridad." },
+  { date: "02-junio-2025", update: "Implementado sistema de soft delete para equipos." },
+  { date: "02-junio-2025", update: "Agregada funcionalidad de exportación a Excel con formato mejorado." },
+  { date: "02-junio-2025", update: "Mejorada la interfaz de usuario con animaciones y transiciones suaves." },
+  { date: "02-junio-2025", update: "Implementada validación dinámica para observaciones según el estado del equipo." },
+  { date: "02-junio-2025", update: "Agregado sistema de seguimiento de cambios con registro detallado de modificaciones." }
+]
   // Categorías para agrupar tareas
   const categories = [
     { title: "Autenticación y Usuarios", items: ['login', 'userAdmin', 'passwordManagement'] },
-    { title: "Base de Datos", items: ['sqlConnection', 'crudOperations', 'dataBackup', 'dataIntegrity'] },
+    { title: "Base de Datos", items: ['sqlConnection', 'crudOperations'] },
     { title: "Interfaz de Usuario", items: ['interfaceDesign', 'responsiveDesign', 'adminDropdown', 'fishAnimations', 'frontendImprovements'] },
     { title: "Gestión de Equipos", items: ['equipmentListing', 'addEquipment', 'editEquipment', 'deleteEquipment', 'searchEquipment'] },
     { title: "Reportes", items: ['excelExport', 'completeReport', 'historyView'] },
@@ -106,8 +105,6 @@ const ProjectTracker = () => {
     passwordManagement: "Cambio de contraseña",
     sqlConnection: "Conexión a SQL Server",
     crudOperations: "Operaciones CRUD",
-    dataBackup: "Respaldo de datos",
-    dataIntegrity: "Integridad de datos",
     interfaceDesign: "Diseño de interfaz",
     responsiveDesign: "Diseño responsivo",
     adminDropdown: "Menú desplegable de Administrador",
@@ -123,7 +120,7 @@ const ProjectTracker = () => {
     historyView: "Vista de historial",
     performanceOptimization: "Optimización de rendimiento",
     securityEnhancements: "Mejoras de seguridad",
-    errorHandling: "Manejo avanzado de errores"
+    errorHandling: "Manejo de errores"
   };
 
   // Lista de campos implementados
@@ -147,22 +144,61 @@ const ProjectTracker = () => {
     { field: "Observación", type: "TextArea" }
   ];
 
-  // Estado para las fotos
-  const [photos, setPhotos] = useState(() => {
-    // Cargar fotos desde localStorage al iniciar
-    const savedPhotos = localStorage.getItem('projectPhotos');
-    if (savedPhotos) {
-      return JSON.parse(savedPhotos);
-    }
-    return [
+  // Datos de fotos permanentes con ejemplos realistas
+const initialPhotos = [
+    
+{
+  id: 1,
+  title: "Pantalla de Login",
+  url: "https://raw.githubusercontent.com/csoledd/progreso/main/login.png", 
+  description: "Login funcionando"
+},
+{
+  id: 2,
+  title: "Login con bloqueo de intentos fallidos",
+  url: "https://raw.githubusercontent.com/csoledd/progreso/main/login%20seguro.png", 
+  description: "Importante para evitar ataques de fuerza bruta"
+},
       {
-        id: 1,
-        title: "Login",
-        url: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%234F46E5'/%3E%3Ctext x='200' y='150' font-family='Arial' font-size='24' fill='white' text-anchor='middle'%3EPantalla de Login%3C/text%3E%3C/svg%3E",
-        description: "Pantalla de inicio de sesión del sistema"
-      }
-    ];
-  });
+    id: 3,
+    title: "Home",
+    url: "https://raw.githubusercontent.com/csoledd/progreso/main/homee.png", // Ver opciones abajo
+    description: " interfaz del inventario de equipos, el admin dispone de los siguientes botones y funcionalidades principales"
+  
+  },
+      {
+    id: 4,
+    title: "Agregar Equipo",
+    url: "https://raw.githubusercontent.com/csoledd/progreso/main/REGISTRAREQUIPO.png", // Ver opciones abajo
+    description: " Panel de agregar equipos con todos los campos implementados"
+  },
+  
+      {
+    id: 5,
+    title: "Agregar Equipo (2)",
+    url: "https://raw.githubusercontent.com/csoledd/progreso/main/agregar2.png", // Ver opciones abajo
+    description: "Panel de agregar equipos con todos los campos implementados"
+  },
+  
+      {
+    id: 6,
+    title: "Generar Reporte Excel",
+    url: "https://raw.githubusercontent.com/csoledd/progreso/main/reporteexcel.png", // Ver opciones abajo
+    description: "Panel de generar reportes en Excel con todos los campos implementados"
+
+  },
+  
+      {
+    id: 7,
+    title: "Inventarios",
+    url: "https://raw.githubusercontent.com/csoledd/progreso/main/equiposexcel.png", // Ver opciones abajo
+    description: "Panel de agregar equipos con todos los campos implementados"
+  },
+
+  ];
+
+  // Estado para las fotos - Ahora con datos persistentes en memoria
+  const [photos, setPhotos] = useState(initialPhotos);
 
   const [newPhoto, setNewPhoto] = useState({
     title: '',
@@ -175,10 +211,10 @@ const ProjectTracker = () => {
   const [fileError, setFileError] = useState('');
   const [uploading, setUploading] = useState(false);
 
-  // Guardar fotos en localStorage cuando cambien
-  useEffect(() => {
-    localStorage.setItem('projectPhotos', JSON.stringify(photos));
-  }, [photos]);
+  // Función para generar ID único
+  const generateId = () => {
+    return Date.now() + Math.random();
+  };
 
   // Función para manejar la selección de archivo
   const handleFileChange = (e) => {
@@ -233,7 +269,7 @@ const ProjectTracker = () => {
       
       // Agregar la nueva foto al estado
       const newPhotoData = {
-        id: Date.now(),
+        id: generateId(),
         title: newPhoto.title,
         url: newPhoto.preview,
         description: newPhoto.description || 'Sin descripción'
@@ -557,16 +593,16 @@ const ProjectTracker = () => {
                   {fileError && (
                     <div className="text-red-600 text-sm mt-2">{fileError}</div>
                   )}
-                  {newPhoto.preview && (
-                    <div className="mt-4">
-                      <p className="text-sm text-gray-600 mb-2">Vista previa:</p>
-                      <img 
-                        src={newPhoto.preview} 
-                        alt="Vista previa" 
-                        className="max-h-48 rounded-lg shadow-md"
-                      />
-                    </div>
-                  )}
+                    {newPhoto.preview && (
+                      <div className="mt-4">
+                         <p className="text-sm text-gray-600 mb-2">Vista previa:</p>
+      <img 
+        src={newPhoto.preview} 
+        alt="Vista previa" 
+        className="max-h-48 rounded-lg shadow-md"
+      />
+    </div>
+  )}
                 </div>
                 
                 <div>
@@ -640,7 +676,7 @@ const ProjectTracker = () => {
                       alt={photo.title}
                       className="w-full h-full object-cover"
                     />
-                    {photo.id !== 1 && ( // No permitir eliminar la foto de login
+                    {photo.id > 5 && (
                       <button 
                         onClick={() => handleDeletePhoto(photo.id)}
                         className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition-all opacity-0 group-hover:opacity-100"
@@ -773,4 +809,5 @@ const ProjectTracker = () => {
   );
 };
 
-export default ProjectTracker;
+
+export default TaskTracker;
